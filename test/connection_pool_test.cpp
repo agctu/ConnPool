@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "connection_pool.h"
+#include <vector>
 
 using namespace std;
 
@@ -33,14 +34,8 @@ private:
     unsigned int index=0;
 };
 
-class ConnPoolTest: public testing::Test {
-protected:
-    ConnPoolTest(): pool({},make_unique<Creator>()) {}
-
-    ConnectionPool pool;
-};
-
-TEST_F(ConnPoolTest, LifeTime) {
+TEST(ConnPoolTest, LifeCycle) {
+    ConnectionPool pool({},make_unique<Creator>());
     EXPECT_THROW(pool.stop(),ConnectionPool::wrong_operation);
     EXPECT_THROW(pool.getConn(),ConnectionPool::wrong_operation);
     pool.start();
@@ -53,7 +48,7 @@ TEST_F(ConnPoolTest, LifeTime) {
     EXPECT_THROW(pool.stop(),ConnectionPool::wrong_operation);
 }
 
-TEST(ConnPoolTestTimeout, Timeout) {
+TEST(ConnPoolTest, Timeout) {
     unsigned int retry_count=3;
     ConnectionPool pool(
         {.max_retry_count=retry_count-1,.retry_interval_milli=10},
@@ -62,11 +57,24 @@ TEST(ConnPoolTestTimeout, Timeout) {
     EXPECT_THROW(pool.start(),ConnectionPool::wrong_operation);
 }
 
-TEST(ConnPoolTestTimeout, Timein) {
+TEST(ConnPoolTest, Timein) {
     unsigned int retry_count=3;
     ConnectionPool pool(
         {.max_retry_count=retry_count,.retry_interval_milli=10},
         make_unique<CreatorWithSpeedControl>(retry_count)
     );
     pool.start();
+}
+
+TEST(ConnPoolTest,ExeedingMaxConnNum) {
+    ConnectionPool pool{{.init_conn_num=2,.max_conn_num=5},make_unique<Creator>()};
+    pool.start();
+    vector<ConnectionPool::Ptr>conns;
+    for(int i=0;i<5;++i) {
+        conns.push_back(dynamic_pointer_cast<Conn>(pool.getConn()));
+    }
+    ASSERT_THROW(pool.getConn(),ConnectionPool::num_limit_exceeded);
+    for(auto i:conns) {
+        pool.relConn(i);
+    }
 }

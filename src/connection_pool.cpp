@@ -11,6 +11,9 @@ ConnectionPool::wrong_connection::wrong_connection()
 ConnectionPool::connection_timeout::connection_timeout(unsigned int retry_count)
     : runtime_error("failed to get connection after "+to_string(retry_count)+" retries") {}
 
+ConnectionPool::num_limit_exceeded::num_limit_exceeded(const string& msg)
+    : runtime_error(msg) {}
+
 ConnectionPool::fatal_error::fatal_error(const string& msg)
     : runtime_error(msg) {}
 
@@ -135,3 +138,14 @@ void ConnectionPool::appendToIdleList(Ptr conn) {
     idle_conns.push_back(conn);
 }
 
+size_t getCount() {
+    return 0;
+}
+
+size_t getActiveCount() {
+    return 0;
+}
+
+size_t getIdleCount() {
+    return 0;
+}

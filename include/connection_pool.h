@@ -20,12 +20,19 @@ public:
     struct connection_timeout : public std::runtime_error {
         connection_timeout(unsigned int retry_count);
     };
+    struct num_limit_exceeded : public std::runtime_error {
+        num_limit_exceeded(const std::string& msg);
+    };
     struct fatal_error : public std::runtime_error {
         fatal_error(const std::string& msg);
     };
 
     struct Config {
         size_t init_conn_num=10;
+        size_t max_conn_num=20;
+        size_t max_idle_conn_num=15;
+        time_t sweep_period_sec=30;
+
         unsigned int max_retry_count=5;
         time_t retry_interval_milli=1000;
     };
@@ -72,6 +79,12 @@ public:
      *       ConnectionPool::wrong_operation
      */ 
     void relConn(Ptr conn);
+
+    size_t getCount();
+
+    size_t getActiveCount();
+
+    size_t getIdleCount();
 
 private:
     enum class Stage {

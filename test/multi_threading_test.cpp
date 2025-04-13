@@ -18,18 +18,16 @@ using Ptr=shared_ptr<Conn>;
 
 class Creator: public ConnectionPool::Creator {
 public:
-    Creator(const string& addr) : addr(addr) {}
+    Creator() {}
     ConnectionPool::Ptr create() override {
         auto ret=make_shared<Conn>();
         cout<<ret<<" created"<<endl;
         return ret;
     }
-private:
-    string addr;
 };
 
 TEST(MultiThreaded,Simple) {
-    ConnectionPool pool{{},make_unique<Creator>("localhost")};
+    ConnectionPool pool{{},make_unique<Creator>()};
     pool.start();
     vector<thread> ths;
     for(int i=0;i<100;++i) {
