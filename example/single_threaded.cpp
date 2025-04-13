@@ -22,7 +22,9 @@ class Creator: public ConnectionPool::Creator {
 public:
     Creator(const string& addr) : addr(addr) {}
     ConnectionPool::Ptr create() override {
-        return make_shared<Conn>();
+        auto ret=make_shared<Conn>();
+        cout<<ret<<endl;
+        return ret;
     }
 private:
     string addr;
@@ -35,6 +37,7 @@ int main() {
 
     for(auto i:conns) {
         dynamic_pointer_cast<Conn>(i)->echo(to_string((uint64_t)i.get()));
+        continue;
         pool.relConn(i);
     }
     return 0;
