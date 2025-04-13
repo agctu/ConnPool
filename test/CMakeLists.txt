@@ -6,7 +6,6 @@ link_libraries(
 add_executable(
   connection_pool_test
   connection_pool_test.cpp
-  helper.cpp
 )
 
 gtest_discover_tests(connection_pool_test)

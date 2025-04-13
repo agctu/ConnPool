@@ -1,8 +1,37 @@
 #include <gtest/gtest.h>
 #include "connection_pool.h"
-#include "helper.h"
 
 using namespace std;
+
+class Conn : public ConnectionPool::Connection {
+public:
+    bool ping() override {
+        return true;
+    }
+    void close() override {
+    }
+};
+
+class Creator : public ConnectionPool::Creator {
+public:
+    ConnectionPool::Ptr create() override {
+        return make_shared<Conn>();
+    }
+};
+
+class CreatorWithSpeedControl : public ConnectionPool::Creator {
+public:
+    CreatorWithSpeedControl(unsigned int retry_count):
+        retry_count(retry_count) {}
+    ConnectionPool::Ptr create() {
+        index+=1;
+        if(index%retry_count==0)return make_shared<Conn>();
+        return nullptr;
+    }
+private:
+    unsigned int retry_count;
+    unsigned int index=0;
+};
 
 class ConnPoolTest: public testing::Test {
 protected:
