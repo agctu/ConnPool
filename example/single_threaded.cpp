@@ -6,8 +6,8 @@ using namespace std;
 
 class Conn: public ConnectionPool::Connection {
 public:
-    void echo(const string& msg) {
-        cout<<msg<<endl;
+    void echoAddr() {
+        cout<<this<<endl;
     }
     bool ping() override  {
         return true;
@@ -23,7 +23,7 @@ public:
     Creator(const string& addr) : addr(addr) {}
     ConnectionPool::Ptr create() override {
         auto ret=make_shared<Conn>();
-        cout<<ret<<endl;
+        cout<<ret<<" created"<<endl;
         return ret;
     }
 private:
@@ -31,14 +31,19 @@ private:
 };
 
 int main() {
-    ConnectionPool pool{{},make_unique<Creator>("localhost")};
-    vector<ConnectionPool::Ptr>conns;
-    for(int i=0;i<10;++i) conns.push_back(pool.getConn());
+    try{
+        ConnectionPool pool{{},make_unique<Creator>("localhost")};
 
-    for(auto i:conns) {
-        dynamic_pointer_cast<Conn>(i)->echo(to_string((uint64_t)i.get()));
-        continue;
-        pool.relConn(i);
+        pool.start();
+        vector<ConnectionPool::Ptr>conns;
+        for(int i=0;i<10;++i) conns.push_back(pool.getConn());
+
+        for(auto i:conns) {
+            dynamic_pointer_cast<Conn>(i)->echoAddr();
+            pool.relConn(i);
+        }
+    } catch (exception& e) {
+        cerr<<e.what()<<endl;
     }
     return 0;
 }

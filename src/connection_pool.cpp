@@ -71,6 +71,9 @@ bool ConnectionPool::clear() {
 }
 
 ConnectionPool::Ptr ConnectionPool::getConn() {
+    if(stage!=Stage::BUSY) {
+        throw wrong_operation("connection available only in BUSY stage");
+    }
     auto conn=pickOneFromIdleList();
     if(!conn) {
         conn=createNewConn();
@@ -80,10 +83,10 @@ ConnectionPool::Ptr ConnectionPool::getConn() {
 }
 
 ConnectionPool::Ptr ConnectionPool::pickOneFromIdleList() {
-    for(auto iter=active_conns.begin();iter!=active_conns.end();++iter) {
+    for(auto iter=idle_conns.begin();iter!=idle_conns.end();++iter) {
         auto conn=*iter;
         if(conn->ping()) {
-            active_conns.erase(iter);
+            idle_conns.erase(iter);
             return conn;
         }
     }
@@ -107,6 +110,9 @@ ConnectionPool::Ptr ConnectionPool::createNewConn() {
 }
 
 void ConnectionPool::relConn(Ptr conn) {
+    if(stage!=Stage::BUSY) {
+        throw wrong_operation("connection available only in BUSY stage");
+    }
     auto ok=removeFromActiveList(conn);
     if(!ok) {
         throw wrong_connection();
