@@ -30,24 +30,21 @@ void ConnectionPool::start() {
     if(stage==Stage::BUSY) {
         throw wrong_operation("pool is already BUSY");
     }
-    if(populate()) {
+    try{
+        populate();
         stage=Stage::BUSY;
-    } else {
+    } catch (connection_timeout& e) {
         if(!clear()) {
             throw fatal_error("can't clear pool after failing to poplulate pool");
         }
+        throw wrong_operation(string("starting pool failed caused by\n")+e.what());
     }
 }
 
-bool ConnectionPool::populate() {
+void ConnectionPool::populate() {
     for(size_t i=0;i<config.init_conn_num;++i) {
-        auto conn=creator->create();
-        if(conn==nullptr) {
-            return false;
-        }
-        idle_conns.push_back(conn);
+        idle_conns.push_back(createNewConn());
     }
-    return true;
 }
 
 void ConnectionPool::stop() {
@@ -56,6 +53,8 @@ void ConnectionPool::stop() {
     }
     if(clear()) {
         stage=Stage::IDLE;
+    } else {
+        throw wrong_operation("failed to stop pool unreleased connections detected");
     }
 }
 

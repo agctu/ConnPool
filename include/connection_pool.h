@@ -82,7 +82,7 @@ private:
     std::mutex conn_mutex;
     std::unique_ptr<Creator> creator;
 
-    bool populate();
+    void populate();
     bool clear();
     Ptr pickOneFromIdleList();
     void appendToActiveList(Ptr conn);
