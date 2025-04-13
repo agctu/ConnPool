@@ -81,7 +81,11 @@ ConnectionPool::Ptr ConnectionPool::getConn() {
     }
     auto conn=pickOneFromIdleList();
     if(!conn) {
-        conn=createNewConn();
+        if(getCount()<config.max_conn_num) {
+            conn=createNewConn();
+        } else {
+            throw num_limit_exceeded("can't create more connection, maximum is "+to_string(config.max_conn_num));
+        }
     }
     appendToActiveList(conn);
     return conn;
@@ -138,14 +142,14 @@ void ConnectionPool::appendToIdleList(Ptr conn) {
     idle_conns.push_back(conn);
 }
 
-size_t getCount() {
+size_t ConnectionPool::getCount() {
+    return idle_conns.size()+active_conns.size();
+}
+
+size_t ConnectionPool::getActiveCount() {
     return 0;
 }
 
-size_t getActiveCount() {
-    return 0;
-}
-
-size_t getIdleCount() {
+size_t ConnectionPool::getIdleCount() {
     return 0;
 }
