@@ -9,3 +9,10 @@ add_executable(
 )
 
 gtest_discover_tests(connection_pool_test)
+
+add_executable(
+  multi_threading_test
+  multi_threading_test.cpp
+)
+
+gtest_discover_tests(multi_threading_test)
