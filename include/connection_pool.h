@@ -58,6 +58,7 @@ public:
 
     /*
      * throw ConnectionPool::wrong_operation
+     *       ConnectionPool::fatal_error
      */
     void stop();
 
@@ -66,6 +67,10 @@ public:
      */
     Ptr getConn();
 
+    /*
+     * throw ConnectionPool::wrong_connection
+     *       ConnectionPool::wrong_operation
+     */ 
     void relConn(Ptr conn);
 
 private:
