@@ -27,6 +27,7 @@ ConnectionPool::~ConnectionPool() {
 }
 
 void ConnectionPool::start() {
+    lock_guard<mutex> lg(pool_mutex);
     if(stage==Stage::BUSY) {
         throw wrong_operation("pool is already BUSY");
     }
@@ -48,6 +49,7 @@ void ConnectionPool::populate() {
 }
 
 void ConnectionPool::stop() {
+    lock_guard<mutex> lg(pool_mutex);
     if(stage==Stage::IDLE) {
         throw wrong_operation("pool is already IDLE");
     }
@@ -70,6 +72,7 @@ bool ConnectionPool::clear() {
 }
 
 ConnectionPool::Ptr ConnectionPool::getConn() {
+    lock_guard<mutex> lg(pool_mutex);
     if(stage!=Stage::BUSY) {
         throw wrong_operation("connection available only in BUSY stage");
     }
@@ -96,7 +99,6 @@ void ConnectionPool::appendToActiveList(Ptr conn) {
     active_conns.insert(conn);
 }
 
-
 ConnectionPool::Ptr ConnectionPool::createNewConn() {
     for(unsigned int i=0;i<config.max_retry_count;++i) {
         auto ret=creator->create();
@@ -109,6 +111,7 @@ ConnectionPool::Ptr ConnectionPool::createNewConn() {
 }
 
 void ConnectionPool::relConn(Ptr conn) {
+    lock_guard<mutex> lg(pool_mutex);
     if(stage!=Stage::BUSY) {
         throw wrong_operation("connection available only in BUSY stage");
     }

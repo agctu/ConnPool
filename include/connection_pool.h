@@ -84,7 +84,7 @@ private:
     std::list<Ptr> idle_conns;
     std::set<Ptr> active_conns;
     std::thread reaper;
-    std::mutex conn_mutex;
+    std::mutex pool_mutex;
     std::unique_ptr<Creator> creator;
 
     void populate();
