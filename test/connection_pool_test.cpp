@@ -78,3 +78,24 @@ TEST(ConnPoolTest,ExeedingMaxConnNum) {
         pool.relConn(i);
     }
 }
+
+TEST(ConnPoolTest,Sweeping) {
+    ConnectionPool::Config config{
+        .init_conn_num=4,
+        .max_conn_num=20,
+        .max_unused_conn_num=2,
+        .used_bound_sec=10,
+        .sweep_period_sec=20
+    };
+    ConnectionPool pool{config, make_unique<Creator>()};
+    pool.start();
+    vector<ConnectionPool::Ptr>conns;
+    for(int i=0;i<config.max_conn_num;++i) {
+        conns.push_back(pool.getConn());
+    }
+    for(auto i:conns) {
+        pool.relConn(i);
+    }
+    this_thread::sleep_for(chrono::seconds(config.sweep_period_sec+config.used_bound_sec+3));
+    ASSERT_EQ(pool.getIdleCount(),config.max_unused_conn_num);
+}

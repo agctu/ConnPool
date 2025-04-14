@@ -30,7 +30,8 @@ public:
     struct Config {
         size_t init_conn_num=10;
         size_t max_conn_num=20;
-        size_t max_idle_conn_num=15;
+        size_t max_unused_conn_num=15;
+        size_t used_bound_sec=20;
         time_t sweep_period_sec=30;
 
         unsigned int max_retry_count=5;
