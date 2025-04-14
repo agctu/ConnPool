@@ -27,7 +27,7 @@ public:
 };
 
 TEST(MultiThreaded,Simple) {
-    ConnectionPool pool{{},make_unique<Creator>()};
+    ConnectionPool pool{{.max_conn_num=1000},make_unique<Creator>()};
     pool.start();
     vector<thread> ths;
     for(int i=0;i<100;++i) {
